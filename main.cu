@@ -33,7 +33,7 @@ __device__ vector3 color(const ray &_r, scene **_tmp_scene,
 
   ray cur_ray = _r;
   vector3 cur_attenuation(1.0f, 1.0f, 1.0f);
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 50; ++i) {
     hitinfo tmp_info;
     if ((*_tmp_scene)->hit(cur_ray, 0.001f, FLT_MAX, tmp_info)) {
       ray scattered_ray;
@@ -74,9 +74,6 @@ __global__ void render(vector3 *fb, int max_x, int max_y, int ray_num,
   }
   rand_state[pixel_index] = local_rand_state;
   tmp_col /= float(ray_num);
-  // tmp_col[0] = sqrt(tmp_col[0]);
-  // tmp_col[1] = sqrt(tmp_col[1]);
-  // tmp_col[2] = sqrt(tmp_col[2]);
   fb[pixel_index] = tmp_col;
 }
 __global__ void rand_init(int max_x, int max_y, curandState *rand_state) {
@@ -146,11 +143,11 @@ __global__ void free_scene(object **objs, scene **tmp_scene,
   delete *(d_camera);
 }
 int main() {
-  int nx = 1920;
-  int ny = 1080;
+  int nx = 192;
+  int ny = 108;
   int tx = 8;
   int ty = 8;
-  int ray_num = 10;
+  int ray_num = 100;
   const int obj_nums = 22 * 22 + 1 + 3;
   std::cerr << "Rendering a " << nx << "x" << ny << " image ";
   std::cerr << "in " << tx << "x" << ty << " blocks.\n";
