@@ -15,7 +15,7 @@ public:
   object **object_list;
   unsigned int object_num;
   unsigned int list_len;
-
+  float time_start, time_end;
   scene() = default;
   __host__ __device__ scene(const unsigned int &);
   __host__ __device__ scene(object **, int);
@@ -61,6 +61,7 @@ __device__ bool scene::hit(const ray &_r, const float &_min, const float &_max,
   }
   return is_hit;
 }
+
 
 __host__ void scene::disp_info() const {
   std::cerr << "display scene info -> list_length : " << list_len

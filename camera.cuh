@@ -22,6 +22,7 @@ public:
   vector3 horizontal_vec;
   vector3 vertical_vec;
   vector3 u, v, w;
+  float time_start, time_end;
   float lens_radius;
   __device__ camera(vector3, vector3, vector3, float, float, float, float);
   __device__ ray gen_ray(const float &, const float &, curandState *);
@@ -49,8 +50,12 @@ __device__ ray camera::gen_ray(const float &s, const float &t,
                                curandState *local_rand_state) {
   vector3 rd = lens_radius * random_in_unit_disk(local_rand_state);
   vector3 offset = u * rd.x() + v * rd.y();
-  return ray(origin + offset, lower_left_corner + s * horizontal_vec +
-                                  t * vertical_vec - origin - offset);
+  float tmp_time =
+      time_start + curand_uniform(local_rand_state) * (time_end - time_start);
+  return ray(origin + offset,
+             lower_left_corner + s * horizontal_vec + t * vertical_vec -
+                 origin - offset,
+             tmp_time);
 }
 
 #endif // RAY_TRACING_ENGINE_CAMERA_H

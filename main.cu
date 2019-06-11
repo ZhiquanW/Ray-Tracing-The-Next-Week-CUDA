@@ -72,7 +72,7 @@ __global__ void render(vector3 *fb, int max_x, int max_y, int ray_num,
     ray tmp_r = (*tmp_cam)->gen_ray(u, v, rand_state);
     tmp_col += color(tmp_r, tmp_scene, &local_rand_state);
   }
-  rand_state[pixel_index] = local_rand_state;
+  // rand_state[pixel_index] = local_rand_state;
   tmp_col /= float(ray_num);
   fb[pixel_index] = tmp_col;
 }

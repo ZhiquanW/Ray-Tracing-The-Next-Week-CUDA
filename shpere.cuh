@@ -14,6 +14,7 @@ private:
   vector3 center;
   float radius;
   material *material_ptr;
+  vector3 center_start, center_end;
 
 public:
   sphere() = default;
@@ -24,11 +25,13 @@ public:
                       hitinfo &) const override;
 
   // bool displacement(const float &_time, vector3 &_target_pos) const override;
+  __device__ vector3 center(flaot _t) const;
 
   __host__ void disp_info() const override;
 };
 __host__ __device__ sphere::sphere(const vector3 &_c, const float &_r,
-                                   material *_m)
+                                   material *_m, const float &_t0 = 0,
+                                   const float &_t1)
     : center(_c), radius(_r), material_ptr(_m) {}
 __device__ bool sphere::hit(const ray &_r, const float &_min, const float &_max,
                             hitinfo &_info) const {
@@ -64,5 +67,9 @@ __device__ bool sphere::hit(const ray &_r, const float &_min, const float &_max,
   return false;
 }
 
+__device__ vector3 center(float _t) const {
+  return center_start + (_t - time_start) / (time_end - time_start) *
+                            (center_end - center_start);
+}
 __host__ void sphere::disp_info() const {}
 #endif // RAY_TRACING_ENGINE_SPHERE_H
