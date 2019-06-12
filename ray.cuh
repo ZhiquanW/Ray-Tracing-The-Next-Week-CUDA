@@ -11,17 +11,17 @@ private:
 public:
   vector3 pos;
   vector3 dir;
-  double time;
+  double r_time;
   ray() = default;
   __device__ ray(double _p0, double _p1, double _p2, double _d0, double _d1,
                  double _d2, double _time) {
     pos.set_vec(_p0, _p1, _p2);
     dir.set_vec(_d0, _d1, _d2);
     this->dir = this->dir.normalize();
-    this->time = _time;
+    this->r_time = _time;
   }
-  __device__ ray(const vector3 &_p, const vector3 &_d, const double &_time = 0)
-      : time(_time) {
+  __device__ ray(const vector3 &_p, const vector3 &_d, const double &_time)
+      : r_time(_time) {
     pos = _p;
     this->dir = _d.normalize();
   }
@@ -32,7 +32,7 @@ public:
 
   __device__ vector3 target_pos(double _t) const { return pos + _t * dir; }
 
-  __device__ double get_time() const { return this->time; }
+  __device__ double time() const { return this->r_time; }
 };
 
 #endif // RAY_TRACING_ENGINE_RAY_H

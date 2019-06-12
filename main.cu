@@ -35,9 +35,11 @@ __device__ vector3 color(const ray &_r, scene **_tmp_scene,
   vector3 cur_attenuation(1.0f, 1.0f, 1.0f);
   for (int i = 0; i < 50; ++i) {
     hitinfo tmp_info;
+    // find hitted object
     if ((*_tmp_scene)->hit(cur_ray, 0.001f, FLT_MAX, tmp_info)) {
       ray scattered_ray;
       vector3 attenutation;
+      // render specific pixel with hitted point info
       if (tmp_info.material_ptr->scatter(cur_ray, tmp_info, attenutation,
                                          scattered_ray, local_rand_state)) {
         cur_attenuation *= attenutation;
@@ -98,6 +100,9 @@ __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
         vector3 tmp_center(a + curand_uniform(&local_rand_state), 0.2f,
                            b + curand_uniform(&local_rand_state));
         if (choose_mat < 0.8f) {
+          // movement *tmp_mv = new movement(
+          //     0, 0.5 + curand_uniform(&local_rand_state),
+          //     vector3(0, -1 * curand_uniform(&local_rand_state), 0));
           objs[i++] = new sphere(
               tmp_center, 0.2f,
               new lambertian(vector3(curand_uniform(&local_rand_state) *
@@ -131,8 +136,9 @@ __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
     vector3 lookat(0, 0, 0);
     float dist_to_focus = (lookfrom - lookat).length();
     float aperture = 0.1;
-    *tmp_cam = new camera(lookfrom, lookat, vector3(0, 1, 0), 30.0,
-                          float(nx) / float(ny), aperture, dist_to_focus);
+    *tmp_cam =
+        new camera(lookfrom, lookat, vector3(0, 1, 0), 30.0,
+                   float(nx) / float(ny), aperture, dist_to_focus, 0.0f, 1.0f);
   }
 }
 __global__ void free_scene(object **objs, scene **tmp_scene,

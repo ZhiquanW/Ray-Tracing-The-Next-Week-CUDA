@@ -22,16 +22,17 @@ public:
   vector3 horizontal_vec;
   vector3 vertical_vec;
   vector3 u, v, w;
-  float time_start, time_end;
+  float start_time, end_time;
   float lens_radius;
-  __device__ camera(vector3, vector3, vector3, float, float, float, float);
+  __device__ camera(vector3, vector3, vector3, float, float, float, float,
+                    float, float);
   __device__ ray gen_ray(const float &, const float &, curandState *);
 };
 
-__device__
-camera::camera(vector3 lookfrom, vector3 lookat, vector3 vup, float vfov,
-               float aspect, float aperture,
-               float focus_dist) { // vfov is top to bottom in degrees
+__device__ camera::camera(vector3 lookfrom, vector3 lookat, vector3 vup,
+                          float vfov, float aspect, float aperture,
+                          float focus_dist, float _st,
+                          float _et) { // vfov is top to bottom in degrees
   lens_radius = aperture / 2.0f;
   float theta = vfov * ((float)M_PI) / 180.0f;
   float half_height = tan(theta / 2.0f);
@@ -44,6 +45,8 @@ camera::camera(vector3 lookfrom, vector3 lookat, vector3 vup, float vfov,
                       half_height * focus_dist * v - focus_dist * w;
   horizontal_vec = 2.0f * half_width * focus_dist * u;
   vertical_vec = 2.0f * half_height * focus_dist * v;
+  start_time = _st;
+  end_time = _et;
 }
 
 __device__ ray camera::gen_ray(const float &s, const float &t,
@@ -51,7 +54,7 @@ __device__ ray camera::gen_ray(const float &s, const float &t,
   vector3 rd = lens_radius * random_in_unit_disk(local_rand_state);
   vector3 offset = u * rd.x() + v * rd.y();
   float tmp_time =
-      time_start + curand_uniform(local_rand_state) * (time_end - time_start);
+      start_time + curand_uniform(local_rand_state) * (end_time - start_time);
   return ray(origin + offset,
              lower_left_corner + s * horizontal_vec + t * vertical_vec -
                  origin - offset,
