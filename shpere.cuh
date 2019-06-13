@@ -21,7 +21,7 @@ public:
   sphere() = default;
 
   __host__ __device__ sphere(const vector3 &_c, const float &_r, material *,
-                             movement * = nullptr);
+                             movement *);
 
   __device__ bool hit(const ray &, const float &, const float &,
                       hitinfo &) const override;
@@ -39,6 +39,7 @@ __device__ bool sphere::hit(const ray &_r, const float &_min, const float &_max,
   vector3 center_t = center_pos;
   if (movement_ptr->is_enable) {
     center_t = this->center(_r.time());
+    // printf("move");
   }
 
   vector3 oc = _r.origin() - center_t;

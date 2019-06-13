@@ -53,8 +53,9 @@ __device__ ray camera::gen_ray(const float &s, const float &t,
                                curandState *local_rand_state) {
   vector3 rd = lens_radius * random_in_unit_disk(local_rand_state);
   vector3 offset = u * rd.x() + v * rd.y();
-  float tmp_time =
-      start_time + curand_uniform(local_rand_state) * (end_time - start_time);
+  float tmp_time = start_time + s * t * curand_uniform(local_rand_state) *
+                                    (end_time - start_time);
+  printf("%f %f : %f\n", s, t, tmp_time);
   return ray(origin + offset,
              lower_left_corner + s * horizontal_vec + t * vertical_vec -
                  origin - offset,

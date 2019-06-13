@@ -20,7 +20,7 @@ public:
     this->is_enable = true;
   }
   __host__ __device__ float start_time() { return time_list[0]; }
-  __host__ __device__ float time_frame() { return time_list[0]; }
+  __host__ __device__ float time_frame() { return time_list[1]; }
   __host__ __device__ vector3 velocity() const { return obj_velocity; }
 };
 #endif

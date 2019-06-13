@@ -85,14 +85,15 @@ __global__ void rand_init(int max_x, int max_y, curandState *rand_state) {
     return;
   int pixel_index = j * max_x + i;
   // Each thread gets same seed, a different sequence number, no offset
-  curand_init(1984 + pixel_index, 0, 0, &rand_state[pixel_index]);
+  curand_init(1997 + pixel_index, 0, 0, &rand_state[pixel_index]);
 }
 __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
                            int nx, int ny, curandState *rand_state) {
   if (threadIdx.x == 0 && blockIdx.x == 0) {
     curandState local_rand_state = *rand_state;
-    objs[0] = new sphere(vector3(0.0f, -1000.0f, -1.0f), 1000.0f,
-                         new lambertian(vector3(0.5f, 0.5f, 0.5f)));
+    objs[0] =
+        new sphere(vector3(0.0f, -1000.0f, -1.0f), 1000.0f,
+                   new lambertian(vector3(0.5f, 0.5f, 0.5f)), new movement());
     int i = 1;
     for (int a = -11; a < 11; ++a) {
       for (int b = -11; b < 11; ++b) {
@@ -100,9 +101,7 @@ __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
         vector3 tmp_center(a + curand_uniform(&local_rand_state), 0.2f,
                            b + curand_uniform(&local_rand_state));
         if (choose_mat < 0.8f) {
-          // movement *tmp_mv = new movement(
-          //     0, 0.5 + curand_uniform(&local_rand_state),
-          //     vector3(0, -1 * curand_uniform(&local_rand_state), 0));
+          movement *tmp_mv = new movement(0, 1, vector3(0.0f, 1, 0.0f));
           objs[i++] = new sphere(
               tmp_center, 0.2f,
               new lambertian(vector3(curand_uniform(&local_rand_state) *
@@ -110,7 +109,8 @@ __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
                                      curand_uniform(&local_rand_state) *
                                          curand_uniform(&local_rand_state),
                                      curand_uniform(&local_rand_state) *
-                                         curand_uniform(&local_rand_state))));
+                                         curand_uniform(&local_rand_state))),
+              tmp_mv);
 
         } else if (choose_mat < 0.95f) {
           objs[i++] = new sphere(
@@ -119,23 +119,28 @@ __global__ void init_scene(object **objs, scene **tmp_scene, camera **tmp_cam,
                   vector3(0.5f * (1.0 + curand_uniform(&local_rand_state)),
                           0.5f * (1.0 + curand_uniform(&local_rand_state)),
                           0.5f * (1.0 + curand_uniform(&local_rand_state))),
-                  0.5f * curand_uniform(&local_rand_state)));
+                  0.5f * curand_uniform(&local_rand_state)),
+              new movement());
         } else {
-          objs[i++] = new sphere(tmp_center, 0.2, new dielectric(1.5));
+          objs[i++] =
+              new sphere(tmp_center, 0.2, new dielectric(1.5), new movement());
         }
       }
     }
-    objs[i++] = new sphere(vector3(0, 1, 0), 1.0, new dielectric(1.5));
-    objs[i++] = new sphere(vector3(-4, 1, 0), 1.0,
-                           new lambertian(vector3(0.4, 0.2, 0.1)));
-    objs[i++] = new sphere(vector3(4, 1, 0), 1.0,
-                           new metal(vector3(0.7, 0.6, 0.5), 0.0));
+    objs[i++] =
+        new sphere(vector3(0, 1, 0), 1.0, new dielectric(1.5), new movement());
+    objs[i++] =
+        new sphere(vector3(-4, 1, 0), 1.0,
+                   new lambertian(vector3(0.4, 0.2, 0.1)), new movement());
+    objs[i++] =
+        new sphere(vector3(4, 1, 0), 1.0,
+                   new metal(vector3(0.7, 0.6, 0.5), 0.0), new movement());
     *rand_state = local_rand_state;
     *(tmp_scene) = new scene(objs, 22 * 22 + 1 + 3);
     vector3 lookfrom(13, 2, 3);
     vector3 lookat(0, 0, 0);
     float dist_to_focus = (lookfrom - lookat).length();
-    float aperture = 0.1;
+    float aperture = 0;
     *tmp_cam =
         new camera(lookfrom, lookat, vector3(0, 1, 0), 30.0,
                    float(nx) / float(ny), aperture, dist_to_focus, 0.0f, 1.0f);
@@ -149,11 +154,11 @@ __global__ void free_scene(object **objs, scene **tmp_scene,
   delete *(d_camera);
 }
 int main() {
-  int nx = 192;
-  int ny = 108;
+  int nx = 800;
+  int ny = 800;
   int tx = 8;
   int ty = 8;
-  int ray_num = 100;
+  int ray_num = 30;
   const int obj_nums = 22 * 22 + 1 + 3;
   std::cerr << "Rendering a " << nx << "x" << ny << " image ";
   std::cerr << "in " << tx << "x" << ty << " blocks.\n";
